@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semangat Beberes Bona! ✨</title>
+    <!-- Menggunakan library Confetti biar ada efek kembang api pas kelar tugas -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1a1a1e;
+            --primary: #ff79c6;
+            --secondary: #8be9fd;
+            --text: #f8f8f2;
+            --text-muted: #6272a4;
+            --success: #50fa7b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #282a36;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: #282a36;
+            border-radius: 10px;
+            height: 15px;
+            width: 100%;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Task List */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            background: #21222c;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .task-item:hover {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .task-item input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .task-item span {
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .task-item.completed {
+            background: #1d1e26;
+            border-color: rgba(80, 250, 123, 0.2);
+        }
+
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Pop up Pesan Semangat */
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: #282a36;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(139, 233, 253, 0.4);
+            transition: bottom 0.4s ease;
+            z-index: 1000;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            bottom: 40px;
+        }
+
+        /* Big Reward Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid var(--success);
+            max-width: 400px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h2 { color: var(--success); }
+        .modal-content p { font-size: 16px; line-height: 1.5; }
+        .reward-btn {
+            background: var(--success);
+            color: #282a36;
+            border: none;
+            padding: 12px 25px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Semangat Beberes, Bona! ✨</h1>
+        <p class="subtitle">Satu per satu ya boyang, kamu pasti bisa! 💕</p>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="task-list" id="taskList">
+            <!-- Tugas diambil dari pesan chatnya -->
+            <div class="task-item" onclick="toggleTask(this)">
+                <input type="checkbox" onchange="updateProgress()">
+                <span>Mencuci Piring 🍽️</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+                <input type="checkbox" onchange="updateProgress()">
+                <span>Mencuci Baju 🧺</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+                <input type="checkbox" onchange="updateProgress()">
+                <span>Menyapu Kosan 🧹</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+                <input type="checkbox" onchange="updateProgress()">
+                <span>Mengepel Lantai 🪣</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+                <input type="checkbox" onchange="updateProgress()">
+                <span>Menjemur Pakaian ☀️</span>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+                <input type="checkbox" onchange="updateProgress()">
+                <span>Ngejualin Donat 📦</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast pesan apresiasi -->
+    <div class="toast" id="toast">Hebat banget! Keren kamu sayang! 🥰</div>
+
+    <!-- Modal Hadiah Utama -->
+    <div class="modal" id="rewardModal">
+        <div class="modal-content">
+            <h2>🎉 MISSION COMPLETED! 🎉</h2>
+            <p>Makasih ya udah berjuang keras beberes hari ini. Kosan udah rapi, kamunya juga pasti capek banget.</p>
+            <p><strong>Reward Unlocked:</strong><br>Kamu dapat *"Virtual Hug"* tanpa batas 🤗🤗🤗 dan virtual milk untuk ngedot 🍼🍼🍼!! Terimakasih sudah kerja keras beberes sendirian pagi ini. Bona perempuan kuat💪</p>
+            <button class="reward-btn" onclick="closeModal()">Klaim Hadiah 💖</button>
+        </div>
+    </div>
+
+    <script>
+        // Daftar kalimat penyemangat random tiap kali klik selesai tugas
+        const motivasi = [
+            "Satu beban hilang! Hebat banget! 🥰",
+            "Pelan-pelan asal kelar, bangga deh sama kamu! ❤️",
+            "Wah makin rapi nih kosannya! ✨",
+            "Gokil, dikit lagi beres sayang! Semangat! 💪",
+            "Jangan lupa minum air putih dulu yaaa! 🥤",
+            "Keren! Asisten robotku aja kalah rajinnya! 🤖"
+        ];
+
+        function toggleTask(element) {
+            // Mencegah trigger ganda kalau klik langsung di checkbox
+            if (event.target.tagName === 'INPUT') return;
+            
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const total = checkboxes.length;
+            let completed = 0;
+
+            checkboxes.forEach(cb => {
+                const item = cb.parentElement;
+                if (cb.checked) {
+                    completed++;
+                    if (!item.classList.contains('completed')) {
+                        item.classList.add('completed');
+                        triggerEffects(); // Efek confetti & toast
+                    }
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+
+            // Update Progress Bar
+            const percentage = (completed / total) * 100;
+            document.getElementById('progressBar').style.width = percentage + '%';
+
+            // Cek jika semua tugas selesai
+            if (completed === total) {
+                setTimeout(() => {
+                    // Confetti besar di akhir
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                    document.getElementById('rewardModal').style.display = 'flex';
+                }, 600);
+            }
+        }
+
+        function triggerEffects() {
+            // Efek Confetti kecil dari library canvas-confetti
+            confetti({ particleCount: 40, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 40, angle: 120, spread: 55, origin: { x: 1 } });
+
+            // Tampilkan Toast Pesan Random
+            const toast = document.getElementById('toast');
+            const teksRandom = motivasi[Math.floor(Math.random() * motivasi.length)];
+            toast.innerText = teksRandom;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        function closeModal() {
+            document.getElementById('rewardModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
